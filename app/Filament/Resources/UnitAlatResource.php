@@ -36,7 +36,7 @@ class UnitAlatResource extends Resource
 
                 Select::make('id_serial_number')
                     ->label('Nomor Serial')
-                    ->relationship('serial_number', 'serial_number')
+                    ->relationship('serialNumber', 'serial_number')
                     ->searchable()
                     ->required(),
 
@@ -71,7 +71,7 @@ class UnitAlatResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('serial_number.serial_number')
+                TextColumn::make('serialNumber.serial_number')
                     ->label('Nomor Serial')
                     ->sortable()
                     ->searchable(),
