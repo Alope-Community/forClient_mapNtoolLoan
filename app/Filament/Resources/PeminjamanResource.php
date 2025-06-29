@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PeminjamanResource\Pages;
 use App\Models\Peminjaman;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
@@ -19,6 +21,11 @@ class PeminjamanResource extends Resource
 {
     protected static ?string $model = Peminjaman::class;
 
+    protected static ?string $modelLabel = 'Peminjaman';
+    protected static ?string $pluralModelLabel = 'Peminjaman';
+    protected static ?string $navigationLabel = 'Peminjaman';
+    protected static ?string $slug = 'peminjaman';
+
     protected static ?string $navigationIcon = 'heroicon-o-bookmark';
 
     public static function form(Form $form): Form
@@ -30,6 +37,8 @@ class PeminjamanResource extends Resource
                 ? Select::make('id_peminjam')
                 ->relationship('user', 'nama')
                 ->label('Dari Peminjam')
+                ->searchable()
+                ->preload()
                 ->required()
                 : Hidden::make('id_peminjam')
                 ->default($user->id),
@@ -48,63 +57,84 @@ class PeminjamanResource extends Resource
                 ->native(false)
                 ->required(),
 
-            Select::make('id_unit_alat')
-                ->label('Pilih Unit Alat')
-                ->multiple()
-                ->searchable()
-                ->options(
-                    \App\Models\UnitAlat::with('alat')
-                        ->where('is_dipinjam', false)
-                        ->get()
-                        ->mapWithKeys(fn($unit) => [
-                            $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
-                        ])
-                )
-                ->preload()
-                ->required(fn($get) => empty($get('id_unit_peta'))),
+            // Select::make('id_unit_alat')
+            //     ->label('Pilih Unit Alat')
+            //     ->multiple()
+            //     ->searchable()
+            //     ->options(
+            //         \App\Models\UnitAlat::with('alat')
+            //             ->where('is_dipinjam', false)
+            //             ->get()
+            //             ->mapWithKeys(fn($unit) => [
+            //                 $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
+            //             ])
+            //     )
+            //     ->preload()
+            //     ->required(fn($get) => empty($get('id_unit_peta'))),
 
-            Select::make('id_unit_peta')
-                ->label('Pilih Unit Peta')
-                ->multiple()
-                ->options(
-                    \App\Models\UnitPeta::where('is_dipinjam', false)
-                        ->get()
-                        ->mapWithKeys(fn($unit) =>  [
-                            $unit->id => $unit->peta->nama,
-                        ])
-                )
-                ->preload()
-                ->required(fn($get) => empty($get('id_unit_alat'))),
+            // Select::make('id_unit_peta')
+            //     ->label('Pilih Unit Peta')
+            //     ->multiple()
+            //     ->options(
+            //         \App\Models\UnitPeta::where('is_dipinjam', false)
+            //             ->get()
+            //             ->mapWithKeys(fn($unit) =>  [
+            //                 $unit->id => $unit->peta->nama,
+            //             ])
+            //     )
+            //     ->preload()
+            //     ->required(fn($get) => empty($get('id_unit_alat'))),
 
-            ToggleButtons::make('status')
-                ->label('Status')
-                ->inline()
+            Repeater::make('detail_peminjaman')
+                ->label('Detail Peminjaman')
+                ->schema([
+                    Group::make([
+                        Select::make('id_unit_alat')
+                            ->label('Pilih Unit Alat')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(
+                                \App\Models\UnitAlat::with('alat')
+                                    ->where('is_dipinjam', false)
+                                    ->get()
+                                    ->mapWithKeys(fn($unit) => [
+                                        $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
+                                    ])
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->columnSpan(6),
+
+                        Select::make('id_unit_peta')
+                            ->label('Pilih Unit Peta')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(
+                                \App\Models\UnitPeta::with('peta')
+                                    ->where('is_dipinjam', false)
+                                    ->get()
+                                    ->mapWithKeys(fn($unit) => [
+                                        $unit->id => $unit->peta->nama,
+                                    ])
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->columnSpan(6),
+                    ]),
+                ])
+                ->minItems(1)
+                ->addActionLabel('Tambah Item')
                 ->required()
-                ->visible($user->hasRole('admin'))
-                ->icons([
-                    'pending' => 'heroicon-o-clock',
-                    'approved' => 'heroicon-o-check-circle',
-                    'borrowed' => 'heroicon-o-arrow-down-circle',
-                    'rejected' => 'heroicon-o-x-circle',
-                    'returned' => 'heroicon-o-arrow-left-circle',
-                    'overdue' => 'heroicon-o-exclamation-circle',
-                ])
-                ->options([
-                    'pending' => 'Pending',
-                    'approved' => 'Approved',
-                    'borrowed' => 'Borrowed',
-                    'rejected' => 'Rejected',
-                    'returned' => 'Returned',
-                    'overdue' => 'Overdue',
-                ])
-                ->colors([
-                    'pending' => 'warning',
-                    'approved' => 'success',
-                    'borrowed' => 'info',
-                    'rejected' => 'danger',
-                    'returned' => 'success',
-                    'overdue' => 'danger',
-                ]),
+                ->columns(1)
+                ->loadStateFromRelationshipsUsing(function ($record) {
+                    return $record->detail_peminjaman->map(function ($item) {
+                        return [
+                            'id_unit_alat' => $item->id_unit_alat,
+                            'id_unit_peta' => $item->id_unit_peta,
+                        ];
+                    })->toArray();
+                })
+
         ]);
     }
 

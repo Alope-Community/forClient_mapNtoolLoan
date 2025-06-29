@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\LoginAdmin;
+use App\Filament\Pages\LoginEmployee;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,15 +19,15 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class EmployeePanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login(LoginAdmin::class)
+            ->id('employee')
+            ->path('employee')
+            ->login(LoginEmployee::class)
             ->colors([
                 'primary' => Color::Amber,
             ])

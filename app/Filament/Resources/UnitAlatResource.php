@@ -127,4 +127,20 @@ class UnitAlatResource extends Resource
             'edit' => Pages\EditUnitAlat::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+    
+        return ($user->hasRole('admin') || ($user->hasRole('kepala')));    
+    }
+    
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+        
+        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+    }
 }

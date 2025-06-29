@@ -7,8 +7,13 @@ use App\Filament\Resources\PengembalianResource\RelationManagers;
 use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,82 +35,169 @@ class PengembalianResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $operation = $form->getOperation();
+        $user = auth()->user();
 
         return $form->schema([
-            Placeholder::make('id_peminjam')
-                ->label('Nama Peminjam')
-                ->content(fn($record) => optional($record?->user)->nama ?? '-'),
-
-            Placeholder::make('tanggal_pinjam')
-                ->label('Tanggal Pinjam')
-                ->content(
-                    fn($record) =>
-                    optional($record?->tanggal_pinjam)
-                        ? \Carbon\Carbon::parse($record->tanggal_pinjam)->format('d-m-Y')
-                        : '-'
-                ),
-
-            Placeholder::make('tanggal_pengembalian')
-                ->label('Tanggal Pengembalian')
-                ->content(
-                    fn($record) =>
-                    optional($record?->tanggal_pengembalian)
-                        ? \Carbon\Carbon::parse($record->tanggal_pengembalian)->format('d-m-Y')
-                        : '-'
-                ),
-
-            Select::make('status')
-                ->label('Status Peminjaman')
-                ->options([
-                    'pending' => 'Menunggu Persetujuan',
-                    'approved' => 'Disetujui',
-                    'borrowed' => 'Sedang Dipinjam',
-                    'rejected' => 'Ditolak',
-                    'returned' => 'Dikembalikan',
-                    'overdue' => 'Terlambat',
-                ])
+            $user->hasRole('admin')
+                ? Select::make('id_peminjam')
+                ->relationship('user', 'nama')
+                ->label('Dari Peminjam')
+                ->searchable()
+                ->preload()
                 ->required()
-                ->disabled(fn() => $operation === 'view'),
+                : Hidden::make('id_peminjam')
+                ->default($user->id),
+
+            DateTimePicker::make('tanggal_pinjam')
+                ->label('Tanggal Pinjam')
+                ->seconds(false)
+                ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
+                ->native(false)
+                ->required(),
+
+            DateTimePicker::make('tanggal_pengembalian')
+                ->label('Tanggal Pengembalian')
+                ->seconds(false)
+                ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
+                ->native(false)
+                ->required(),
+
+            // Select::make('id_unit_alat')
+            //     ->label('Pilih Unit Alat')
+            //     ->multiple()
+            //     ->searchable()
+            //     ->options(
+            //         \App\Models\UnitAlat::with('alat')
+            //             ->where('is_dipinjam', false)
+            //             ->get()
+            //             ->mapWithKeys(fn($unit) => [
+            //                 $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
+            //             ])
+            //     )
+            //     ->preload()
+            //     ->required(fn($get) => empty($get('id_unit_peta'))),
+
+            // Select::make('id_unit_peta')
+            //     ->label('Pilih Unit Peta')
+            //     ->multiple()
+            //     ->options(
+            //         \App\Models\UnitPeta::where('is_dipinjam', false)
+            //             ->get()
+            //             ->mapWithKeys(fn($unit) =>  [
+            //                 $unit->id => $unit->peta->nama,
+            //             ])
+            //     )
+            //     ->preload()
+            //     ->required(fn($get) => empty($get('id_unit_alat'))),
+
+            ToggleButtons::make('status')
+                ->label('Status')
+                ->inline()
+                ->required()
+                ->visible($user->hasRole('admin'))
+                ->icons([
+                    'pending' => 'heroicon-o-clock',
+                    'approved' => 'heroicon-o-check-circle',
+                    'borrowed' => 'heroicon-o-arrow-down-circle',
+                    'rejected' => 'heroicon-o-x-circle',
+                    'returned' => 'heroicon-o-arrow-left-circle',
+                    'overdue' => 'heroicon-o-exclamation-circle',
+                ])
+                ->options([
+                    'pending' => 'Pending',
+                    'approved' => 'Approved',
+                    'borrowed' => 'Borrowed',
+                    'rejected' => 'Rejected',
+                    'returned' => 'Returned',
+                    'overdue' => 'Overdue',
+                ])
+                ->colors([
+                    'pending' => 'warning',
+                    'approved' => 'success',
+                    'borrowed' => 'info',
+                    'rejected' => 'danger',
+                    'returned' => 'success',
+                    'overdue' => 'danger',
+                ]),
+
+            Repeater::make('detail_peminjaman')
+                ->label('Detail Peminjaman')
+                ->schema([
+                    Group::make([
+                        Select::make('id_unit_alat')
+                            ->label('Pilih Unit Alat')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(
+                                \App\Models\UnitAlat::with('alat')
+                                    ->where('is_dipinjam', false)
+                                    ->get()
+                                    ->mapWithKeys(fn($unit) => [
+                                        $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
+                                    ])
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->columnSpan(6),
+
+                        Select::make('id_unit_peta')
+                            ->label('Pilih Unit Peta')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(
+                                \App\Models\UnitPeta::with('peta')
+                                    ->where('is_dipinjam', false)
+                                    ->get()
+                                    ->mapWithKeys(fn($unit) => [
+                                        $unit->id => $unit->peta->nama,
+                                    ])
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->columnSpan(6),
+                    ]),
+                ])
+                ->minItems(1)
+                ->addActionLabel('Tambah Item')
+                ->required(),
+
         ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('user.nama')
-                    ->label('Nama Peminjam'),
+        return $table->columns([
+            TextColumn::make('user.nama')
+                ->label('Nama Peminjam')
+                ->searchable()
+                ->sortable(),
 
-                TextColumn::make('tanggal_pinjam')
-                    ->label('Tanggal Pinjam')
-                    ->date(),
+            TextColumn::make('tanggal_pinjam')
+                ->label('Tanggal Pinjam')
+                ->dateTime('d M Y H:i')
+                ->sortable(),
 
-                TextColumn::make('tanggal_pengembalian')
-                    ->label('Tanggal Pengembalian')
-                    ->date(),
+            TextColumn::make('tanggal_pengembalian')
+                ->label('Tanggal Pengembalian')
+                ->dateTime('d M Y H:i')
+                ->sortable(),
 
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->formatStateUsing(fn(string $state) => match ($state) {
-                        'pending' => 'Menunggu Persetujuan',
-                        'approved' => 'Disetujui',
-                        'borrowed' => 'Sedang Dipinjam',
-                        'rejected' => 'Ditolak',
-                        'returned' => 'Dikembalikan',
-                        'overdue' => 'Terlambat',
-                        default => ucfirst($state),
-                    })
-                    ->color(fn(string $state) => match ($state) {
-                        'pending' => 'gray',
-                        'approved' => 'info',
-                        'borrowed' => 'warning',
-                        'rejected' => 'danger',
-                        'returned' => 'success',
-                        'overdue' => 'red',
-                        default => 'secondary',
-                    }),
+            TextColumn::make('status')
+                ->label('Status')
+                ->badge()
+                ->sortable()
+                ->color(fn(string $state): string => match ($state) {
+                    'pending' => 'warning',
+                    'approved' => 'success',
+                    'borrowed' => 'info1',
+                    'returned' => 'success',
+                    'rejected' => 'danger',
+                    'overdue' => 'danger',
+                    default => 'secondary',
+                }),
+        ])
+            ->filters([
+                // Tambahkan filter jika dibutuhkan
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -133,7 +225,18 @@ class PengembalianResource extends Resource
             'edit' => Pages\EditPengembalian::route('/{record}/edit'),
         ];
     }
-    
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery()->where('status', 'pending');
+
+        if (auth()->user()->hasRole('karyawan')) {
+            $query->where('id_peminjam', auth()->id());
+        }
+
+        return $query;
+    }
+
     public static function canCreate(): bool
     {
         return false; 
