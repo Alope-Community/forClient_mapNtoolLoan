@@ -8,6 +8,7 @@ use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -44,6 +45,7 @@ class PengembalianResource extends Resource
                 ->label('Dari Peminjam')
                 ->searchable()
                 ->preload()
+                ->disabled()
                 ->required()
                 : Hidden::make('id_peminjam')
                 ->default($user->id),
@@ -51,6 +53,7 @@ class PengembalianResource extends Resource
             DateTimePicker::make('tanggal_pinjam')
                 ->label('Tanggal Pinjam')
                 ->seconds(false)
+                ->readOnly()
                 ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
                 ->native(false)
                 ->required(),
@@ -58,6 +61,7 @@ class PengembalianResource extends Resource
             DateTimePicker::make('tanggal_pengembalian')
                 ->label('Tanggal Pengembalian')
                 ->seconds(false)
+                ->readOnly()
                 ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
                 ->native(false)
                 ->required(),
@@ -90,76 +94,126 @@ class PengembalianResource extends Resource
             //     ->preload()
             //     ->required(fn($get) => empty($get('id_unit_alat'))),
 
-            ToggleButtons::make('status')
-                ->label('Status')
-                ->inline()
-                ->required()
-                ->visible($user->hasRole('admin'))
-                ->icons([
-                    'pending' => 'heroicon-o-clock',
-                    'approved' => 'heroicon-o-check-circle',
-                    'borrowed' => 'heroicon-o-arrow-down-circle',
-                    'rejected' => 'heroicon-o-x-circle',
-                    'returned' => 'heroicon-o-arrow-left-circle',
-                    'overdue' => 'heroicon-o-exclamation-circle',
-                ])
-                ->options([
-                    'pending' => 'Pending',
-                    'approved' => 'Approved',
-                    'borrowed' => 'Borrowed',
-                    'rejected' => 'Rejected',
-                    'returned' => 'Returned',
-                    'overdue' => 'Overdue',
-                ])
-                ->colors([
-                    'pending' => 'warning',
-                    'approved' => 'success',
-                    'borrowed' => 'info',
-                    'rejected' => 'danger',
-                    'returned' => 'success',
-                    'overdue' => 'danger',
-                ]),
+            // ->options(
+            //     \App\Models\UnitAlat::with('alat', 'serialNumber')
+            //         ->where('is_dipinjam', false)
+            //         ->get()
+            //         ->pluck(
+            //             fn($unit) => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
+            //             'id'
+            //         )
+            // )
 
-            Repeater::make('detail_peminjaman')
-                ->label('Detail Peminjaman')
+            Repeater::make('detailPeminjamanAlat')
+                ->label('Peminjaman Alat')
+                ->relationship()
+                ->live()
                 ->schema([
-                    Group::make([
-                        Select::make('id_unit_alat')
-                            ->label('Pilih Unit Alat')
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->options(
-                                \App\Models\UnitAlat::with('alat')
-                                    ->where('is_dipinjam', false)
-                                    ->get()
-                                    ->mapWithKeys(fn($unit) => [
-                                        $unit->id => $unit->alat->nama . ' - ' . optional($unit->serialNumber)->serial_number,
-                                    ])
-                            )
-                            ->searchable()
-                            ->preload()
-                            ->reactive()
-                            ->columnSpan(6),
+                    Select::make('id_unit_alat')
+                        ->label('Pilih Unit Alat')
+                        ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                        ->options(function ($get) {
+                            $selectedId = $get('id_unit_alat');
 
-                        Select::make('id_unit_peta')
-                            ->label('Pilih Unit Peta')
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->options(
-                                \App\Models\UnitPeta::with('peta')
-                                    ->where('is_dipinjam', false)
-                                    ->get()
-                                    ->mapWithKeys(fn($unit) => [
-                                        $unit->id => $unit->peta->nama,
-                                    ])
-                            )
-                            ->searchable()
-                            ->preload()
-                            ->reactive()
-                            ->columnSpan(6),
-                    ]),
+                            $query = \App\Models\UnitAlat::with('alat')
+                                ->where('is_dipinjam', false);
+
+                            // Jika ada yang sudah dipilih (misalnya saat edit), tampilkan juga
+                            if ($selectedId) {
+                                $query->orWhere('id', $selectedId);
+                            }
+
+                            return $query->get()
+                                ->mapWithKeys(fn($unit) => [
+                                    $unit->id => $unit->alat->nama,
+                                ]);
+                        })
+                        ->getOptionLabelFromRecordUsing(
+                            fn($record) => optional($record->alat)->nama ?? 'Tidak ditemukan'
+                        )
+                        ->searchable()
+                        ->required(fn($get) => count($get('detailPeminjamanPeta') ?? []) === 0)
+                        ->preload()
+                        ->reactive()
+                        ->columnSpan(6)
                 ])
-                ->minItems(1)
+                ->addActionLabel('Tambah Alat')
+                ->disabled()
+                ->columns(1),
+
+            Repeater::make('detailPeminjamanPeta')
+                ->label('Peminjaman Peta')
+                ->relationship()
+                ->live()
+                ->schema([
+                    Select::make('id_unit_peta')
+                        ->label('Pilih Unit Peta')
+                        ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                        ->options(function ($get) {
+                            $selectedId = $get('id_unit_peta');
+
+                            $query = \App\Models\UnitPeta::with('peta')
+                                ->where('is_dipinjam', false);
+
+                            // Jika ada yang sudah dipilih (misalnya saat edit), tampilkan juga
+                            if ($selectedId) {
+                                $query->orWhere('id', $selectedId);
+                            }
+
+                            return $query->get()
+                                ->mapWithKeys(fn($unit) => [
+                                    $unit->id => $unit->peta->nama,
+                                ]);
+                        })
+                        ->getOptionLabelFromRecordUsing(
+                            fn($record) =>
+                            $record->peta->nama // ubah sesuai kolom yang kamu butuhkan
+                        )
+                        ->searchable()
+                        ->required(fn($get) => count($get('detailPeminjamanAlat') ?? []) === 0)
+                        ->preload()
+                        ->reactive()
+                        ->columnSpan(6),
+                ])
                 ->addActionLabel('Tambah Item')
-                ->required(),
+                ->disabled()
+                ->columns(1),
+
+            // Repeater::make('detailPeminjamanPeta')
+            //     ->label('Peminjaman Peta')
+            //     ->schema([
+            //         Group::make([
+            //             Select::make('id_unit_peta')
+            //                 ->label('Pilih Unit Peta')
+            //                 ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+            //                 ->options(
+            //                     \App\Models\UnitPeta::with('peta')
+            //                         ->where('is_dipinjam', false)
+            //                         ->get()
+            //                         ->mapWithKeys(fn($unit) => [
+            //                             $unit->id => $unit->peta->nama,
+            //                         ])
+            //                 )
+            //                 ->searchable()
+            //                 ->preload()
+            //                 ->reactive()
+            //                 ->columnSpan(6),
+            //         ]),
+            //     ])
+            //     ->minItems(1)
+            //     ->addActionLabel('Tambah Item')
+            //     ->required()
+            //     ->columns(1)
+
+            FileUpload::make('bukti_pengembalian')
+                ->preserveFilenames()
+                ->downloadable()
+                ->label('Upload Bukti Pengembalian')
+                ->directory('pengembalian')
+                ->loadingIndicatorPosition('right')
+                ->removeUploadedFileButtonPosition('right')
+                ->uploadButtonPosition('right')
+                ->uploadProgressIndicatorPosition('right'),
 
         ]);
     }
@@ -239,6 +293,6 @@ class PengembalianResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false; 
+        return false;
     }
 }

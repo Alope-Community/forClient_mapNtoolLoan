@@ -17,4 +17,15 @@ class EditPengembalian extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $record = $this->record;
+        $data = $this->form->getState();
+
+        if (!empty($data['bukti_pengembalian'])) {
+            $record->status = 'returned';
+            $record->save();
+        }
+    }
 }
