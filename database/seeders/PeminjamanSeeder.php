@@ -18,7 +18,7 @@ class PeminjamanSeeder extends Seeder
                 'id_peminjam' => 2,
                 'tanggal_pinjam' => now(),
                 'tanggal_pengembalian' => now()->addDays(3),
-                'status' => 'borrowed',
+                'status' => 'approved',
             ]
         ];
 

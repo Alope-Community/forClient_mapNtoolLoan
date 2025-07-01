@@ -27,8 +27,25 @@ class UpdateOverduePeminjaman extends Command
     {
         $overdues = \App\Models\Peminjaman::where('status', '!=', 'returned')
             ->whereDate('tanggal_pengembalian', '<', now())
-            ->update(['status' => 'overdue']);
+            ->get();
 
-        $this->info("Updated $overdues records to overdue.");
+            $updatedCount = 0;
+
+            foreach ($overdues as $peminjamanOverdue) {
+
+                $peminjamanOverdue->update(['status' => 'overdue']);
+
+                foreach ($peminjamanOverdue->detailPeminjamanAlat as $detail) {
+                    $detail->unitAlat?->update(['is_dipinjam' => false]);
+                }
+
+                foreach ($peminjamanOverdue->detailPeminjamanPeta as $detail) {
+                    $detail->unitPeta?->update(['is_dipinjam' => false]);
+                }
+
+                $updatedCount++;
+            }
+
+        $this->info("Updated $updatedCount peminjaman to overdue and released all related units.");
     }
 }

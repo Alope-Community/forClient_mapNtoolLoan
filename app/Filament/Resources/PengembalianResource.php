@@ -215,6 +215,22 @@ class PengembalianResource extends Resource
                 ->uploadButtonPosition('right')
                 ->uploadProgressIndicatorPosition('right'),
 
+            ToggleButtons::make('status')
+                ->inline()
+                ->options([
+                    'approved' => 'Disetujui',
+                    'returned' => 'Dikembalikan',
+                ])
+                ->icons([
+                    'approved' => 'heroicon-o-check-circle',
+                    'returned' => 'heroicon-o-arrow-uturn-left',
+                ])
+                ->colors([
+                    'approved' => 'success',
+                    'returned' => 'success'
+                ])
+                ->visible(fn() => auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('kepala') && Pages\EditPengembalian::class)
+
         ]);
     }
 
@@ -243,7 +259,6 @@ class PengembalianResource extends Resource
                 ->color(fn(string $state): string => match ($state) {
                     'pending' => 'warning',
                     'approved' => 'success',
-                    'borrowed' => 'info1',
                     'returned' => 'success',
                     'rejected' => 'danger',
                     'overdue' => 'danger',
@@ -282,7 +297,7 @@ class PengembalianResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery()->where('status', 'pending');
+        $query = parent::getEloquentQuery()->where('status', 'approved');
 
         if (auth()->user()->hasRole('karyawan')) {
             $query->where('id_peminjam', auth()->id());

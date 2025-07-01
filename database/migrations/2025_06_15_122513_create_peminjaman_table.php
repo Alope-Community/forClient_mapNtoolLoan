@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('id_peminjam')->references('id')->on('users')->cascadeOnDelete();
             $table->date('tanggal_pinjam');
             $table->date('tanggal_pengembalian');
-            $table->enum('status', ['pending', 'approved', 'borrowed', 'rejected', 'returned', 'overdue']);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'returned', 'overdue']);
             $table->timestamps();
         });
     }

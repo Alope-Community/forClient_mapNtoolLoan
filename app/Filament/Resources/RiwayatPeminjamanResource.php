@@ -173,7 +173,6 @@ class RiwayatPeminjamanResource extends Resource
                     ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
                         'approved' => 'success',
-                        'borrowed' => 'info1',
                         'returned' => 'success',
                         'rejected' => 'danger',
                         'overdue' => 'danger',

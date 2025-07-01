@@ -36,7 +36,10 @@ class PeminjamanResource extends Resource
         return $form->schema([
             $user->hasRole('admin')
                 ? Select::make('id_peminjam')
-                ->relationship('user', 'nama')
+                ->options(
+                    \App\Models\User::role('karyawan')
+                        ->pluck('nama', 'id') // ['id' => 'nama']
+                )
                 ->label('Dari Peminjam')
                 ->searchable()
                 ->preload()
@@ -49,6 +52,8 @@ class PeminjamanResource extends Resource
                 ->seconds(false)
                 ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
                 ->native(false)
+                ->reactive()
+                ->closeOnDateSelection()
                 ->required(),
 
             DateTimePicker::make('tanggal_pengembalian')
@@ -56,7 +61,10 @@ class PeminjamanResource extends Resource
                 ->seconds(false)
                 ->timezone(auth()->user()->timezone ?? 'Asia/Jakarta')
                 ->native(false)
-                ->required(),
+                ->closeOnDateSelection()
+                ->required()
+                ->reactive()
+                ->after('tanggal_pinjam'),
 
             // Select::make('id_unit_alat')
             //     ->label('Pilih Unit Alat')
@@ -128,9 +136,9 @@ class PeminjamanResource extends Resource
                         ->reactive()
                         ->columnSpan(6)
                 ])
-                ->minItems(1)
+                ->defaultItems(0)
                 ->addActionLabel('Tambah Alat')
-                ->required()
+                ->requiredWithout('detailPeminjamanPeta')
                 ->columns(1),
 
             Repeater::make('detailPeminjamanPeta')
@@ -163,13 +171,33 @@ class PeminjamanResource extends Resource
                         )
                         ->searchable()
                         ->preload()
+                        ->required()
                         ->reactive()
                         ->columnSpan(6),
                 ])
-                ->minItems(1)
+                ->defaultItems(0)
                 ->addActionLabel('Tambah Item')
-                ->required()
+                ->requiredWithout('detailPeminjamanAlat')
                 ->columns(1),
+
+            ToggleButtons::make('status')
+                ->inline()
+                ->visibleOn('edit')
+                ->options([
+                    'pending' => 'Menunggu',
+                    'approved' => 'Disetujui',
+                    'rejected' => 'Ditolak',
+                ])
+                ->icons([
+                    'pending' => 'heroicon-o-clock',
+                    'approved' => 'heroicon-o-check-circle',
+                    'rejected' => 'heroicon-o-x-circle',
+                ])
+                ->colors([
+                    'pending' => 'warning',
+                    'approved' => 'success',
+                    'rejected' => 'danger',
+                ])
 
             // Repeater::make('detailPeminjamanPeta')
             //     ->label('Peminjaman Peta')
@@ -225,7 +253,6 @@ class PeminjamanResource extends Resource
                 ->color(fn(string $state): string => match ($state) {
                     'pending' => 'warning',
                     'approved' => 'success',
-                    'borrowed' => 'info1',
                     'returned' => 'success',
                     'rejected' => 'danger',
                     'overdue' => 'danger',

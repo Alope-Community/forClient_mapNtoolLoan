@@ -88,7 +88,6 @@ class DetailPeminjamanAlatResource extends Resource
                     ->content(fn($record) => match (optional($record?->peminjaman)->status) {
                         'pending' => 'Menunggu Persetujuan',
                         'approved' => 'Disetujui',
-                        'borrowed' => 'Sedang Dipinjam',
                         'rejected' => 'Ditolak',
                         'returned' => 'Dikembalikan',
                         'overdue' => 'Terlambat',
@@ -133,7 +132,6 @@ class DetailPeminjamanAlatResource extends Resource
                     ->formatStateUsing(fn(string $state) => match ($state) {
                         'pending' => 'Menunggu Persetujuan',
                         'approved' => 'Disetujui',
-                        'borrowed' => 'Sedang Dipinjam',
                         'rejected' => 'Ditolak',
                         'returned' => 'Dikembalikan',
                         'overdue' => 'Terlambat',
@@ -142,7 +140,6 @@ class DetailPeminjamanAlatResource extends Resource
                     ->color(fn(string $state) => match ($state) {
                         'pending' => 'gray',
                         'approved' => 'info',
-                        'borrowed' => 'warning',
                         'rejected' => 'danger',
                         'returned' => 'success',
                         'overdue' => 'red',

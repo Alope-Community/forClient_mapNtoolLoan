@@ -32,7 +32,7 @@ class CreatePeminjaman extends CreateRecord
                     'id_peminjaman' => $record->id,
                     'id_unit_alat' => $unitAlatId,
                 ]);
-                \App\Models\UnitAlat::where('id', $unitAlatId)->update(['is_dipinjam' => true]);
+                // \App\Models\UnitAlat::where('id', $unitAlatId)->update(['is_dipinjam' => true]);
             }
         }
 
@@ -42,7 +42,7 @@ class CreatePeminjaman extends CreateRecord
                     'id_peminjaman' => $record->id,
                     'id_unit_peta' => $unitPetaId,
                 ]);
-                \App\Models\UnitPeta::where('id', $unitPetaId)->update(['is_dipinjam' => true]);
+                // \App\Models\UnitPeta::where('id', $unitPetaId)->update(['is_dipinjam' => true]);
             }
         }
     }
