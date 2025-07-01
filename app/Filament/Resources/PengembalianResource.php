@@ -23,6 +23,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
+use function PHPUnit\Framework\isEmpty;
+
 class PengembalianResource extends Resource
 {
     protected static ?string $model = Peminjaman::class;
@@ -206,7 +208,10 @@ class PengembalianResource extends Resource
             //     ->columns(1)
 
             FileUpload::make('bukti_pengembalian')
+                ->required()
                 ->preserveFilenames()
+                ->previewable()
+                ->openable()
                 ->downloadable()
                 ->label('Upload Bukti Pengembalian')
                 ->directory('pengembalian')
@@ -229,8 +234,9 @@ class PengembalianResource extends Resource
                     'approved' => 'success',
                     'returned' => 'success'
                 ])
+                ->required()
                 ->visible(fn() => auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('kepala') && Pages\EditPengembalian::class)
-
+                ->disabled(fn($get) => blank($get('bukti_pengembalian'))),
         ]);
     }
 

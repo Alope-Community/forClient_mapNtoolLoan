@@ -182,7 +182,7 @@ class PeminjamanResource extends Resource
 
             ToggleButtons::make('status')
                 ->inline()
-                ->visibleOn('edit')
+                ->visible(fn() => auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('kepala') && Pages\EditPeminjaman::class)
                 ->options([
                     'pending' => 'Menunggu',
                     'approved' => 'Disetujui',
