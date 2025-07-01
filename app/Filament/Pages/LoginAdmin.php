@@ -38,7 +38,7 @@ class LoginAdmin extends Login
             $this->throwFailureValidationException();
         }
 
-        if (!$user->hasRole('admin')) {
+        if (!$user->hasRole('admin') && !$user->hasRole('kepala')) {
             Filament::auth()->logout();
 
             throw ValidationException::withMessages([
