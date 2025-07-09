@@ -32,6 +32,7 @@ class AlatResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = auth()->user();
         return $table
             ->columns([
                 TextColumn::make('nama')
@@ -42,11 +43,13 @@ class AlatResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => $user->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => $user->hasRole('admin')),
                 ]),
             ]);
     }
@@ -71,16 +74,15 @@ class AlatResource extends Resource
     {
         /** @var \App\Models\User */
         $user = auth()->user();
-    
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));    
+
+        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
     }
-    
+
     public static function canViewAny(): bool
     {
         /** @var \App\Models\User */
         $user = auth()->user();
-        
+
         return ($user->hasRole('admin') || ($user->hasRole('kepala')));
     }
-
 }

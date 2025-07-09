@@ -149,6 +149,8 @@ class RiwayatPeminjamanResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = auth()->user();
+
         return $table
             ->columns([
                 TextColumn::make('user.nama')
@@ -183,12 +185,15 @@ class RiwayatPeminjamanResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->visible(fn() => auth()->user()->hasRole('admin')),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->hasRole('admin')),
                 ]),
             ]);
     }
