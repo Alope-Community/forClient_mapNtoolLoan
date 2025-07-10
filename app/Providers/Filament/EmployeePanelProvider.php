@@ -32,6 +32,7 @@ class EmployeePanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->spa()
+            ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/employee/theme.css', 'build/filament')
             // ->viteTheme('resources/css/filament/employee/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
