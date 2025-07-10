@@ -44,6 +44,7 @@ class PetaResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = auth()->user();
         return $table
             ->columns([
                 TextColumn::make('nama')->sortable()->searchable(),
@@ -63,11 +64,13 @@ class PetaResource extends Resource
             ->filters([])
             ->actions([
                 \Filament\Tables\Actions\ViewAction::make(),
-                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Tables\Actions\EditAction::make()
+                    ->visible(fn() => auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
                 \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->hasRole('admin')),
                 ]),
             ]);
     }

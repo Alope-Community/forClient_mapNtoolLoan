@@ -125,6 +125,7 @@ class DetailPeminjamanPetaResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = auth()->user();
         return $table
             ->columns([
                 TextColumn::make('peminjaman.user.nama')
@@ -188,11 +189,13 @@ class DetailPeminjamanPetaResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => $user->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => $user->hasRole('admin')),
                 ]),
             ]);
     }

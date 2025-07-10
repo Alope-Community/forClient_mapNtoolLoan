@@ -64,6 +64,8 @@ class UnitAlatResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = auth()->user();
+
         return $table
             ->columns([
                 TextColumn::make('alat.nama')
@@ -102,11 +104,13 @@ class UnitAlatResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn() => auth()->user()->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->hasRole('admin')),
                 ]),
             ]);
     }
@@ -132,15 +136,15 @@ class UnitAlatResource extends Resource
     {
         /** @var \App\Models\User */
         $user = auth()->user();
-    
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));    
+
+        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
     }
-    
+
     public static function canViewAny(): bool
     {
         /** @var \App\Models\User */
         $user = auth()->user();
-        
+
         return ($user->hasRole('admin') || ($user->hasRole('kepala')));
     }
 }
