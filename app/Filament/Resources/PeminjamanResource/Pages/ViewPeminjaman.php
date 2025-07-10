@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\PeminjamanResource\Pages;
 
 use App\Filament\Resources\PeminjamanResource;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
@@ -13,6 +15,28 @@ use Filament\Infolists\Components\RepeatableEntry;
 class ViewPeminjaman extends ViewRecord
 {
     protected static string $resource = PeminjamanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('download_pdf')
+                ->label('Download PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action('downloadPDF'),
+        ];
+    }
+
+    public function downloadPDF()
+    {
+        $record = $this->record;
+
+        $pdf = Pdf::loadView('pdf.peminjaman', ['record' => $record]);
+
+        return response()->streamDownload(
+            fn() => print($pdf->stream()),
+            'peminjaman_' . $record->id . '.pdf'
+        );
+    }
 
     public function infolist(Infolist $infolist): Infolist
     {
