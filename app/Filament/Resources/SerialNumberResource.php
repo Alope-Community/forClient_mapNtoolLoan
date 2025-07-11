@@ -20,6 +20,11 @@ class SerialNumberResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
 
+    protected static ?string $slug = 'serial-number';
+
+    protected static ?string $modelLabel = 'Serial Number';
+    protected static ?string $pluralModelLabel = 'Serial Number';
+
     public static function form(Form $form): Form
     {
         return $form

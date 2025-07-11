@@ -21,6 +21,11 @@ class DetailPeminjamanAlatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $slug = 'detail-peminjaman-alat';
+
+    protected static ?string $modelLabel = 'Detail Peminjaman Alat';
+    protected static ?string $pluralModelLabel = 'Detail Peminjaman Alat';
+
     public static function form(Form $form): Form
     {
         return $form->schema(function () use ($form) {

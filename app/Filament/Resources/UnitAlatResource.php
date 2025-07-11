@@ -24,6 +24,11 @@ class UnitAlatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench';
 
+    protected static ?string $slug = 'unit-alat';
+
+    protected static ?string $modelLabel = 'Unit Alat';
+    protected static ?string $pluralModelLabel = 'Unit Alat';
+
     public static function form(Form $form): Form
     {
         return $form

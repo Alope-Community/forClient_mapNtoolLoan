@@ -21,6 +21,11 @@ class AlatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
+    protected static ?string $slug = 'alat';
+
+    protected static ?string $modelLabel = 'Alat';
+    protected static ?string $pluralModelLabel = 'Alat';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -33,10 +38,10 @@ class AlatResource extends Resource
     public static function table(Table $table): Table
     {
         $user = auth()->user();
+
         return $table
             ->columns([
-                TextColumn::make('nama')
-                    ->searchable(),
+                TextColumn::make('nama')->searchable(),
                 TextColumn::make('deskripsi')
             ])
             ->filters([
@@ -44,12 +49,12 @@ class AlatResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => $user->hasRole('admin')),
+                    ->visible(fn () => $user->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn() => $user->hasRole('admin')),
+                        ->visible(fn () => $user->hasRole('admin')),
                 ]),
             ]);
     }
@@ -64,7 +69,7 @@ class AlatResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAlats::route('/'),
+            'index' => Pages\ListAlats::route('/'), // route tetap / karena sudah diganti ke 'alat' melalui $slug
             'create' => Pages\CreateAlat::route('/create'),
             'edit' => Pages\EditAlat::route('/{record}/edit'),
         ];
@@ -72,17 +77,18 @@ class AlatResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        /** @var \App\Models\User */
         $user = auth()->user();
-
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+        return $user->hasRole('admin') || $user->hasRole('kepala');
     }
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User */
         $user = auth()->user();
+        return $user->hasRole('admin') || $user->hasRole('kepala');
+    }
 
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('admin');
     }
 }

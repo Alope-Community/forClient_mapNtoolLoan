@@ -24,6 +24,11 @@ class UnitPetaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $slug = 'unit-peta';
+
+    protected static ?string $modelLabel = 'Unit Peta';
+    protected static ?string $pluralModelLabel = 'Unit Peta';
+
     public static function form(Form $form): Form
     {
         return $form

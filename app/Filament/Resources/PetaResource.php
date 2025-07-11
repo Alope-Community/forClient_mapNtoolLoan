@@ -21,6 +21,11 @@ class PetaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $slug = 'peta';
+
+    protected static ?string $modelLabel = 'Peta';
+    protected static ?string $pluralModelLabel = 'Peta';
+
     public static function form(Form $form): Form
     {
         return $form

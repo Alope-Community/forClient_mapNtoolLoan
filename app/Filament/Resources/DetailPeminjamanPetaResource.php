@@ -22,6 +22,11 @@ class DetailPeminjamanPetaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $slug = 'detail-peminjaman-peta';
+
+    protected static ?string $modelLabel = 'Detail Peminjaman Peta';
+    protected static ?string $pluralModelLabel = 'Detail Peminjaman Peta';
+
     public static function form(Form $form): Form
     {
         return $form->schema(function () use ($form) {
