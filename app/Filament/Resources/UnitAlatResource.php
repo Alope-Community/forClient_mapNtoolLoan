@@ -59,8 +59,8 @@ class UnitAlatResource extends Resource
                 Radio::make('is_dipinjam')
                     ->label('Status Peminjaman')
                     ->options([
-                        0 => 'Sedang Dipinjam',
-                        1 => 'Tersedia',
+                        0 => 'Tersedia',
+                        1 => 'Sedang Dipinjam',
                     ])
                     ->inline()
                     ->required(),
