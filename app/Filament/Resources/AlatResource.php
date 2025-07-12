@@ -6,7 +6,13 @@ use App\Filament\Resources\AlatResource\Pages;
 use App\Filament\Resources\AlatResource\RelationManagers;
 use App\Models\Alat;
 use Filament\Forms;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,8 +36,37 @@ class AlatResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('nama'),
-                TextInput::make('deskripsi')
+                Wizard::make([
+                    Step::make('Data Alat')->schema([
+                        TextInput::make('nama')->required(),
+                        TextInput::make('deskripsi')->required(),
+                    ]),
+                    Step::make('Serial Number (opsional)')->schema([
+                        Repeater::make('serialNumber')
+                            ->schema([
+                                TextInput::make('serial_number')->required(),
+                                Textarea::make('deskripsi')->required(),
+                            ])
+                            ->default([])
+                            ->dehydrated(false),
+                    ]),
+                    Step::make('Unit Alat')->schema([
+                        Repeater::make('unitAlat')
+                            ->schema([
+                                Select::make('id_serial_number')
+                                    ->options(\App\Models\SerialNumber::pluck('serial_number', 'id'))
+                                    ->required(),
+                                Select::make('kondisi')
+                                    ->options(['baik' => 'Baik', 'rusak' => 'Rusak'])
+                                    ->required(),
+                                Textarea::make('lokasi')->required(),
+                                Radio::make('is_dipinjam')
+                                    ->options([0 => 'Sedang Dipinjam', 1 => 'Tersedia'])
+                                    ->required(),
+                            ])
+                    ])
+                ])
+
             ]);
     }
 
@@ -49,12 +84,12 @@ class AlatResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => $user->hasRole('admin')),
+                    ->visible(fn() => $user->hasRole('admin')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => $user->hasRole('admin')),
+                        ->visible(fn() => $user->hasRole('admin')),
                 ]),
             ]);
     }
