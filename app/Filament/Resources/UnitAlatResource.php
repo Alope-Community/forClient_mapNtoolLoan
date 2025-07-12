@@ -3,74 +3,69 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UnitAlatResource\Pages;
-use App\Filament\Resources\UnitAlatResource\RelationManagers;
 use App\Models\UnitAlat;
 use Filament\Forms;
-use Filament\Forms\Components\Radio;
+use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Radio;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UnitAlatResource extends Resource
 {
     protected static ?string $model = UnitAlat::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-wrench';
-
     protected static ?string $slug = 'unit-alat';
-
     protected static ?string $modelLabel = 'Unit Alat';
     protected static ?string $pluralModelLabel = 'Unit Alat';
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Select::make('id_alat')
-                    ->label('Nama Alat')
-                    ->relationship('alat', 'nama')
-                    ->searchable()
-                    ->required(),
+        return $form->schema([
+            Select::make('id_alat')
+                ->label('Nama Alat')
+                ->relationship('alat', 'nama')
+                ->searchable()
+                ->required(),
 
-                Select::make('id_serial_number')
-                    ->label('Nomor Serial')
-                    ->relationship('serialNumber', 'serial_number')
-                    ->searchable()
-                    ->required(),
+            Select::make('id_serial_number')
+                ->label('Nomor Serial')
+                ->relationship('serialNumber', 'serial_number')
+                ->searchable()
+                ->required(),
 
-                Select::make('kondisi')
-                    ->options([
-                        'baik' => 'Baik',
-                        'rusak' => 'Rusak',
-                    ])
-                    ->required(),
+            Select::make('kondisi')
+                ->label('Kondisi')
+                ->options([
+                    'baik' => 'Baik',
+                    'rusak' => 'Rusak',
+                ])
+                ->required(),
 
-                Textarea::make('lokasi')
-                    ->label('Lokasi Penyimpanan')
-                    ->required(),
+            Textarea::make('lokasi')
+                ->label('Lokasi Penyimpanan')
+                ->placeholder('Contoh: Gudang Utama, Rak 3')
+                ->rows(2)
+                ->required(),
 
-                Radio::make('is_dipinjam')
-                    ->label('Status Peminjaman')
-                    ->options([
-                        0 => 'Sedang Dipinjam',
-                        1 => 'Tersedia',
-                    ])
-                    ->inline()
-                    ->required(),
-            ]);
+            Radio::make('is_dipinjam')
+                ->label('Status Alat')
+                ->options([
+                    1 => 'Tersedia',
+                    0 => 'Sedang Dipinjam',
+                ])
+                ->inline()
+                ->required(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
-        $user = auth()->user();
-
         return $table
             ->columns([
                 TextColumn::make('alat.nama')
@@ -104,9 +99,6 @@ class UnitAlatResource extends Resource
                     ->iconPosition(IconPosition::Before)
                     ->badge(),
             ])
-            ->filters([
-                //
-            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
@@ -122,9 +114,7 @@ class UnitAlatResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -137,19 +127,20 @@ class UnitAlatResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['alat', 'serialNumber']);
+    }
+
     public static function shouldRegisterNavigation(): bool
     {
-        /** @var \App\Models\User */
         $user = auth()->user();
-
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+        return $user->hasRole('admin') || $user->hasRole('kepala');
     }
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User */
         $user = auth()->user();
-
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+        return $user->hasRole('admin') || $user->hasRole('kepala');
     }
 }
