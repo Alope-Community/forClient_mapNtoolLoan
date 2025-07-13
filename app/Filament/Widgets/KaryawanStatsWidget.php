@@ -23,4 +23,8 @@ class KaryawanStatsWidget extends BaseWidget
                 ->icon('heroicon-o-arrow-path'),
         ];
     }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole('karyawan');
+    }
 }

@@ -129,7 +129,8 @@ class CreateUnitAlat extends CreateRecord
                         ->inline()
                         ->required(),
                 ]),
-            ])->submitAction(new HtmlString(Blade::render(<<<BLADE
+            ])->columnSpanFull()
+            ->submitAction(new HtmlString(Blade::render(<<<BLADE
             <x-filament::button type="submit" size="sm">
                 Submit
             </x-filament::button>
