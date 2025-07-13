@@ -51,22 +51,59 @@ class CreateUnitAlat extends CreateRecord
                 }),
 
                 Step::make('Nomor Serial')->schema([
-                    TextInput::make('serial_number')
-                        ->label('Nomor Serial')
+                    Radio::make('serial_mode')
+                        ->label('Mode Input Serial Number')
+                        ->options([
+                            'baru' => 'Tambah Serial Number Baru',
+                            'pilih' => 'Pilih dari Serial Number yang Ada',
+                        ])
+                        ->default('baru')
+                        ->inline()
                         ->required()
+                        ->reactive(),
+
+                    TextInput::make('serial_number')
+                        ->label('Nomor Serial Baru')
+                        ->required(fn(Get $get) => $get('serial_mode') === 'baru')
+                        ->visible(fn(Get $get) => $get('serial_mode') === 'baru')
                         ->columnSpanFull(),
 
                     Textarea::make('deskripsi_serial')
                         ->label('Deskripsi Serial')
-                        ->required()
+                        ->required(fn(Get $get) => $get('serial_mode') === 'baru')
+                        ->visible(fn(Get $get) => $get('serial_mode') === 'baru')
+                        ->columnSpanFull(),
+
+                    Select::make('id_serial_number')
+                        ->label('Pilih Nomor Serial')
+                        ->options(SerialNumber::all()->pluck('serial_number', 'id'))
+                        ->searchable()
+                        ->preload()
+                        ->required(fn(Get $get) => $get('serial_mode') === 'pilih')
+                        ->visible(fn(Get $get) => $get('serial_mode') === 'pilih')
+                        ->reactive(),
+
+                    Textarea::make('deskripsi_serial_terpilih')
+                        ->label('Deskripsi Serial (Terpilih)')
+                        ->disabled()
+                        ->visible(fn(Get $get) => $get('serial_mode') === 'pilih')
+                        ->afterStateHydrated(function (Set $set, Get $get) {
+                            $serial = SerialNumber::find($get('id_serial_number'));
+                            if ($serial) {
+                                $set('deskripsi_serial_terpilih', $serial->deskripsi);
+                            }
+                        })
+                        ->reactive()
                         ->columnSpanFull(),
                 ])->afterValidation(function (Get $get, Set $set) {
-                    $serial = SerialNumber::create([
-                        'id_alat' => $get('id_alat'),
-                        'serial_number' => $get('serial_number'),
-                        'deskripsi' => $get('deskripsi_serial'),
-                    ]);
-                    $set('id_serial_number', $serial->id);
+                    if ($get('serial_mode') === 'baru') {
+                        $serial = SerialNumber::create([
+                            'id_alat' => $get('id_alat'),
+                            'serial_number' => $get('serial_number'),
+                            'deskripsi' => $get('deskripsi_serial'),
+                        ]);
+                        $set('id_serial_number', $serial->id);
+                    }
                 }),
 
                 Step::make('Detail Unit Alat')->schema([
