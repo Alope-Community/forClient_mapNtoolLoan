@@ -42,45 +42,20 @@ class CreateUnitPeta extends CreateRecord
                         ->required(),
 
                     FileUpload::make('gambar')
-                        ->label('File PDF')
-                        ->acceptedFileTypes(['application/pdf'])
-                        ->directory('file-peta')
-                        ->visibility('public')
                         ->required()
+                        ->previewable()
+                        ->acceptedFileTypes(['application/pdf'])
                         ->openable()
                         ->downloadable()
-                        ->previewable()
-                        ->reactive()
-                        ->preserveFilenames()
-                        ->maxSize(10240) // 10MB
-                        ->columnSpanFull(),
-                ])->afterValidation(function (Get $get, Set $set) {
-                    $gambarInput = $get('gambar');
-
-                    // Tangani single / multiple upload
-                    $gambarFile = is_array($gambarInput) ? ($gambarInput[0] ?? null) : $gambarInput;
-
-                    // Cek jika tidak ada file
-                    if (!$gambarFile || !($gambarFile instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)) {
-                        throw new \Exception("File PDF tidak ditemukan atau belum dipilih.");
-                    }
-
-                    // Simpan file ke storage permanen (misal di public/file-peta)
-                    $savedPath = $gambarFile->store('file-peta', 'public'); // folder 'storage/app/public/file-peta'
-
-                    // Simpan ke DB
-                    $peta = \App\Models\Peta::create([
-                        'nama' => $get('nama'),
-                        'deskripsi' => $get('deskripsi'),
-                        'nomor' => $get('nomor'),
-                        'kabupaten' => $get('kabupaten'),
-                        'provinsi' => $get('provinsi'),
-                        'gambar' => $savedPath, // Simpan path hasil upload
-                    ]);
-
-                    // Simpan ID untuk step selanjutnya
-                    $set('id_peta', $peta->id);
-                }),
+                        ->label('Upload Gambar Peta')
+                        ->loadingIndicatorPosition('right')
+                        ->removeUploadedFileButtonPosition('right')
+                        ->uploadButtonPosition('right')
+                        ->uploadProgressIndicatorPosition('right')
+                        ->disk('public')
+                        ->directory('peta')
+                        ->preserveFilenames(),
+                ]),
 
                 Step::make('Detail Unit Peta')->schema([
                     Select::make('kondisi')
@@ -104,17 +79,30 @@ class CreateUnitPeta extends CreateRecord
                         ->inline()
                         ->required(),
                 ]),
-            ])->columnSpanFull()
+            ])->columnSpanFull(),
         ]);
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function handleRecordCreation(array $data): UnitPeta
     {
-        return [
-            'id_peta' => $data['id_peta'],
+        // Simpan data ke model Peta terlebih dahulu
+        $peta = Peta::create([
+            'nama' => $data['nama'],
+            'deskripsi' => $data['deskripsi'] ?? null,
+            'nomor' => $data['nomor'] ?? null,
+            'kabupaten' => $data['kabupaten'],
+            'provinsi' => $data['provinsi'],
+            'gambar' => $data['gambar'],
+        ]);
+
+        // Simpan UnitPeta dengan referensi ke ID Peta
+        $unitPeta = UnitPeta::create([
+            'id_peta' => $peta->id,
             'kondisi' => $data['kondisi'],
             'lokasi' => $data['lokasi'],
             'is_dipinjam' => $data['is_dipinjam'],
-        ];
+        ]);
+
+        return $unitPeta;
     }
 }
