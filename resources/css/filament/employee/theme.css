@@ -1,7 +1,0 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
-
-@config './tailwind.config.js';
-
-aside.fi-sidebar {
-    @apply bg-gray-200
-}
