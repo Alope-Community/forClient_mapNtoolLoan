@@ -1519,7 +1519,7 @@
     @endif
 </head>
 
-<body class="h-screen w-screen bg-cover bg-center" style="background-image: url('https://unsplash.com/id/foto/sekelompok-orang-berdiri-di-atas-lokasi-konstruksi-xAnQIF2251w')">
+<body class="h-screen w-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1601582585792-3a1c1eac5644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80')">
     <div class="flex items-center justify-center h-full backdrop-blur-sm bg-black/30">
         <div class="bg-white/30 backdrop-blur-lg rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
             <h1 class="text-3xl font-bold text-white mb-6 drop-shadow">Selamat Datang</h1>
