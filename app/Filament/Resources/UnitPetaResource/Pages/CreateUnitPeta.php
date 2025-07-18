@@ -73,8 +73,8 @@ class CreateUnitPeta extends CreateRecord
                     Radio::make('is_dipinjam')
                         ->label('Status Peminjaman')
                         ->options([
-                            1 => 'Tersedia',
-                            0 => 'Sedang Dipinjam',
+                            0 => 'Tersedia',
+                            1 => 'Sedang Dipinjam',
                         ])
                         ->inline()
                         ->required(),

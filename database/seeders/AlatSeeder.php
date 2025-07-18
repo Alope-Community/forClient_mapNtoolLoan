@@ -17,10 +17,12 @@ class AlatSeeder extends Seeder
             [
                 'nama' => 'Kompas',
                 'deskripsi' => 'Kompas lapangan',
+                'gambar' => 'kompas_lapangan.png',
             ],
             [
                 'nama' => 'GPS',
                 'deskripsi' => 'GPS tangan',
+                'gambar' => 'gps_tangan.png'
             ],
         ];
         

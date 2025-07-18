@@ -18,6 +18,7 @@ use Filament\Forms\Components\Hidden;
 use App\Models\Alat;
 use App\Models\SerialNumber;
 use App\Models\UnitAlat;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
@@ -42,13 +43,23 @@ class CreateUnitAlat extends CreateRecord
                         ->label('Deskripsi Alat')
                         ->required()
                         ->columnSpanFull(),
-                ])->afterValidation(function (Get $get, Set $set) {
-                    $alat = Alat::create([
-                        'nama' => $get('nama'),
-                        'deskripsi' => $get('deskripsi'),
-                    ]);
-                    $set('id_alat', $alat->id);
-                }),
+
+                    FileUpload::make('gambar')
+                        ->required()
+                        ->previewable()
+                        ->acceptedFileTypes(['application/pdf'])
+                        ->openable()
+                        ->downloadable()
+                        ->label('Upload Gambar Alat')
+                        ->loadingIndicatorPosition('right')
+                        ->removeUploadedFileButtonPosition('right')
+                        ->uploadButtonPosition('right')
+                        ->uploadProgressIndicatorPosition('right')
+                        ->disk('public')
+                        ->directory('alat')
+                        ->preserveFilenames(),
+
+                ]),
 
                 Step::make('Nomor Serial')->schema([
                     Radio::make('serial_mode')
@@ -95,16 +106,7 @@ class CreateUnitAlat extends CreateRecord
                         })
                         ->reactive()
                         ->columnSpanFull(),
-                ])->afterValidation(function (Get $get, Set $set) {
-                    if ($get('serial_mode') === 'baru') {
-                        $serial = SerialNumber::create([
-                            'id_alat' => $get('id_alat'),
-                            'serial_number' => $get('serial_number'),
-                            'deskripsi' => $get('deskripsi_serial'),
-                        ]);
-                        $set('id_serial_number', $serial->id);
-                    }
-                }),
+                ]),
 
                 Step::make('Detail Unit Alat')->schema([
                     Select::make('kondisi')
@@ -123,35 +125,42 @@ class CreateUnitAlat extends CreateRecord
                     Radio::make('is_dipinjam')
                         ->label('Status Alat')
                         ->options([
-                            1 => 'Tersedia',
-                            0 => 'Sedang Dipinjam',
+                            0 => 'Tersedia',
+                            1 => 'Sedang Dipinjam',
                         ])
                         ->inline()
                         ->required(),
                 ]),
             ])->columnSpanFull()
-            ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                ->submitAction(new HtmlString(Blade::render(<<<BLADE
             <x-filament::button type="submit" size="sm">
                 Submit
             </x-filament::button>
             BLADE)))
         ]);
     }
+    
+    protected function handleRecordCreation(array $data): UnitAlat {
+        $alat = Alat::create([
+            'nama' => $data['nama'],
+            'deskripsi' => $data['deskripsi'],
+            'gambar' => $data['gambar']
+        ]);
 
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        return [
-            'id_alat' => $data['id_alat'],
-            'id_serial_number' => $data['id_serial_number'],
+        $serialNumber = $data['id_serial_number'] ?? SerialNumber::create([
+            'serial_number' => $data['serial_number'],
+            'deskripsi' => $data['deskripsi']
+        ])->id;
+
+        $unitAlat = UnitAlat::create([
+            'id_alat' => $alat->id,
+            'id_serial_number' => $serialNumber,
             'kondisi' => $data['kondisi'],
             'lokasi' => $data['lokasi'],
             'is_dipinjam' => $data['is_dipinjam'],
-        ];
-    }
+        ]);
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
-    {
-        return UnitAlat::create($data);
+        return $unitAlat;
     }
 
     protected function getFormActions(): array

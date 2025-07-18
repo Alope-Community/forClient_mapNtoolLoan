@@ -11,6 +11,7 @@ class Alat extends Model
     protected $fillable = [
         'nama',
         'deskripsi',
+        'gambar'
     ];
 
     public function unitAlat()

@@ -56,8 +56,8 @@ class UnitAlatResource extends Resource
             Radio::make('is_dipinjam')
                 ->label('Status Alat')
                 ->options([
-                    1 => 'Tersedia',
-                    0 => 'Sedang Dipinjam',
+                    0 => 'Tersedia',
+                    1 => 'Sedang Dipinjam',
                 ])
                 ->inline()
                 ->required(),
@@ -93,9 +93,9 @@ class UnitAlatResource extends Resource
 
                 TextColumn::make('is_dipinjam')
                     ->label('Status')
-                    ->formatStateUsing(fn(bool $state) => $state ? 'Tersedia' : 'Sedang Dipinjam')
-                    ->color(fn(bool $state) => $state ? 'success' : 'danger')
-                    ->icon(fn(bool $state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->formatStateUsing(fn(bool $state) => $state ? 'Sedang Dipinjam' : 'Tersedia')
+                    ->color(fn(bool $state) => $state ? 'warning' : 'success')
+                    ->icon(fn(bool $state) => $state ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-check-circle')
                     ->iconPosition(IconPosition::Before)
                     ->badge(),
             ])

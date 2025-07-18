@@ -71,11 +71,21 @@ class ViewUnitAlat extends ViewRecord
 
                             TextEntry::make('is_dipinjam')
                                 ->label('Status Peminjaman')
-                                ->formatStateUsing(fn($state) => $state ? 'Tersedia' : 'Sedang Dipinjam')
+                                ->formatStateUsing(fn($state) => $state ? 'Sedang Dipinjam' : 'Tersedia')
                                 ->badge()
-                                ->color(fn($state) => $state ? 'success' : 'danger'),
+                                ->color(fn($state) => $state ? 'warning' : 'success'),
                         ])->columns(1),
                     ]),
+
+                Section::make('Gambar Unit')->schema([
+                    Group::make([
+                        TextEntry::make('alat.gambar')
+                            ->label('File Gambar Alat')
+                            ->formatStateUsing(fn($state) => $state ? 'Lihat File' : '-')
+                            ->url(fn($state) => $state ? asset('storage/' . $state) : null, true)
+                            ->openUrlInNewTab()
+                    ])
+                ])
             ]);
     }
 }
