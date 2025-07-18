@@ -6,6 +6,8 @@ use App\Filament\Resources\UnitPetaResource\Pages;
 use App\Filament\Resources\UnitPetaResource\RelationManagers;
 use App\Models\UnitPeta;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -17,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class UnitPetaResource extends Resource
 {
@@ -47,10 +50,6 @@ class UnitPetaResource extends Resource
                     ])
                     ->required(),
 
-                Textarea::make('lokasi')
-                    ->label('Lokasi Penyimpanan')
-                    ->required(),
-
                 Radio::make('is_dipinjam')
                     ->label('Status Peminjaman')
                     ->options([
@@ -59,6 +58,35 @@ class UnitPetaResource extends Resource
                     ])
                     ->inline()
                     ->required(),
+
+                Textarea::make('lokasi')
+                    ->label('Lokasi Penyimpanan')
+                    ->columnSpanFull()
+                    ->required(),
+
+                FileUpload::make('gambar_peta')
+                    ->label('Gambar Peta')
+                    ->disk('public')
+                    ->directory('peta')
+                    ->preserveFilenames()
+                    ->openable()
+                    ->downloadable()
+                    ->visibility('public')
+                    ->reactive()
+                    ->visible(fn($get) => !empty($get('id_peta')))
+                    ->getUploadedFileNameForStorageUsing(function ($file) {
+                        return $file->getClientOriginalName();
+                    }),
+
+                Placeholder::make('preview_gambar')
+                    ->label('Gambar Saat Ini')
+                    ->content(function ($get) {
+                        $peta = \App\Models\Peta::find($get('id_peta'));
+                        return $peta && $peta->gambar
+                            ? new HtmlString('<a href="' . asset('storage/' . $peta->gambar) . '" style="text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'" target="_blank" rel="noopener noreferrer">Lihat File</a>')
+                            : 'Tidak ada gambar';
+                    })
+                    ->visible(fn($get) => !empty($get('id_peta')))
             ]);
     }
 

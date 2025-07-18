@@ -9,6 +9,7 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Storage;
 
 class ViewUnitPeta extends ViewRecord
 {
@@ -45,7 +46,8 @@ class ViewUnitPeta extends ViewRecord
 
                         TextEntry::make('peta.gambar')
                             ->label('File Peta (PDF)')
-                            ->url(fn($record) => \Storage::url($record->peta->gambar))
+                            ->formatStateUsing(fn($state) => $state ? 'Lihat File' : '-')
+                            ->url(fn($record) => Storage::url($record->peta->gambar))
                             ->openUrlInNewTab(),
                     ])
                     ->columns(2),

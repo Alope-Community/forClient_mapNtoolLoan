@@ -17,4 +17,19 @@ class EditUnitPeta extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!empty($data['gambar_peta']) && !empty($data['id_peta'])) {
+            $peta = \App\Models\Peta::find($data['id_peta']);
+            if ($peta) {
+                $peta->gambar = $data['gambar_peta'];
+                $peta->save();
+            }
+        }
+
+        unset($data['gambar_peta']);
+
+        return $data;
+    }
 }

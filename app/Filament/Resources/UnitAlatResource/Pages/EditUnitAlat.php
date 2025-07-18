@@ -17,4 +17,19 @@ class EditUnitAlat extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!empty($data['gambar_alat']) && !empty($data['id_alat'])) {
+            $alat = \App\Models\Alat::find($data['id_alat']);
+            if ($alat) {
+                $alat->gambar = $data['gambar_alat'];
+                $alat->save();
+            }
+        }
+
+        unset($data['gambar_alat']);
+
+        return $data;
+    }
 }

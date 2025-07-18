@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UnitAlatResource\Pages;
 use App\Models\UnitAlat;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class UnitAlatResource extends Resource
 {
@@ -29,6 +32,8 @@ class UnitAlatResource extends Resource
         return $form->schema([
             Select::make('id_alat')
                 ->label('Nama Alat')
+                ->live()
+                ->reactive()
                 ->relationship('alat', 'nama')
                 ->searchable()
                 ->required(),
@@ -47,20 +52,45 @@ class UnitAlatResource extends Resource
                 ])
                 ->required(),
 
-            Textarea::make('lokasi')
-                ->label('Lokasi Penyimpanan')
-                ->placeholder('Contoh: Gudang Utama, Rak 3')
-                ->rows(2)
-                ->required(),
-
             Radio::make('is_dipinjam')
                 ->label('Status Alat')
                 ->options([
                     0 => 'Tersedia',
                     1 => 'Sedang Dipinjam',
                 ])
-                ->inline()
                 ->required(),
+
+            Textarea::make('lokasi')
+                ->label('Lokasi Penyimpanan')
+                ->placeholder('Contoh: Gudang Utama, Rak 3')
+                ->rows(2)
+                ->columnSpanFull()
+                ->required(),
+
+            FileUpload::make('gambar_alat')
+                ->label('Gambar Alat')
+                ->disk('public')
+                ->directory('alat')
+                ->preserveFilenames()
+                ->openable()
+                ->downloadable()
+                ->visibility('public')
+                ->reactive()
+                ->visible(fn($get) => !empty($get('id_alat')))
+                ->getUploadedFileNameForStorageUsing(function ($file) {
+                    return $file->getClientOriginalName();
+                }),
+
+            Placeholder::make('preview_gambar')
+                ->label('Gambar Saat Ini')
+                ->content(function ($get) {
+                    $alat = \App\Models\Alat::find($get('id_alat'));
+                    return $alat && $alat->gambar
+                        ? new HtmlString('<a href="' . asset('storage/' . $alat->gambar) . '" style="text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'" target="_blank" rel="noopener noreferrer">Lihat File</a>')
+                        : 'Tidak ada gambar';
+                })
+                ->visible(fn($get) => !empty($get('id_alat')))
+
         ]);
     }
 
