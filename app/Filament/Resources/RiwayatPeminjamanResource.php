@@ -219,7 +219,7 @@ class RiwayatPeminjamanResource extends Resource
 
         if (auth()->user()->hasRole('karyawan')) {
             $query->where('id_peminjam', auth()->id())
-                ->whereIn('status', ['returned', 'rejected']);
+                ->whereIn('status', ['returned', 'rejected', 'overdue']);
         }
 
         return $query;

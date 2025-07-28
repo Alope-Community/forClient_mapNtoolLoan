@@ -3,8 +3,11 @@
 namespace App\Filament\Resources\PengembalianResource\Pages;
 
 use App\Filament\Resources\PengembalianResource;
+use App\Models\User;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\HtmlString;
 
 class EditPengembalian extends EditRecord
 {
@@ -44,6 +47,26 @@ class EditPengembalian extends EditRecord
 
             $record->status = $status;
             $record->save();
+        }
+
+        $recepients = User::withoutRole('karyawan')->get();
+
+        $namaPeminjam = auth()->user()->nama;
+        $tanggalPengembalian = \Carbon\Carbon::parse($record->updated_at)->translatedFormat('d F Y');
+        $jumlahAlat = $record->detailPeminjamanAlat()->count();
+        $jumlahPeta = $record->detailPeminjamanPeta()->count();
+
+        $bodyMessage = new HtmlString("
+        <strong>{$namaPeminjam}</strong> telah mengajukan pengembalian pada tanggal <strong>{$tanggalPengembalian}</strong>.<br>
+        Jumlah Alat: <strong>{$jumlahAlat}</strong><br>
+        Jumlah Peta: <strong>{$jumlahPeta}</strong><br>
+        <a href='" . route('filament.admin.resources.pengembalian.view', $record) . "' class='underline text-primary-600'>Lihat Detail</a>");
+
+        foreach ($recepients as $user) {
+            Notification::make()
+                ->title('Pengajuan Pengembalian Baru')
+                ->body($bodyMessage)
+                ->sendToDatabase($user);
         }
     }
 

@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(LoginAdmin::class)
             ->profile(EditProfile::class)
+            ->databaseNotifications()
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label(fn() => auth()->user()->getFilamentName())
