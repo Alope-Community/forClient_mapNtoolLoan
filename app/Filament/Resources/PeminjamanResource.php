@@ -300,4 +300,9 @@ class PeminjamanResource extends Resource
 
         return $query;
     }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole(['admin', 'karyawan']);
+    }
 }
