@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Spatie\Permission\Models\Role;
 
@@ -117,17 +118,16 @@ class UserResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        /** @var \App\Models\User */
-        $user = auth()->user();
-
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+        return auth()->user()->hasRole(['admin']);
     }
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User */
-        $user = auth()->user();
+        return auth()->user()->hasRole(['admin']);
+    }
 
-        return ($user->hasRole('admin') || ($user->hasRole('kepala')));
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()->hasRole(['admin']);
     }
 }

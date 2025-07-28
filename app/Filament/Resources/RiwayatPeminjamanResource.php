@@ -225,6 +225,20 @@ class RiwayatPeminjamanResource extends Resource
         return $query;
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasRole(['admin', 'karyawan']);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole(['admin', 'karyawan']);
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()->hasRole(['admin', 'karyawan']);
+    }
 
     public static function canEdit(Model $record): bool
     {

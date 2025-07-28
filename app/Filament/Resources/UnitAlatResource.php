@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Support\Enums\IconPosition;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 
 class UnitAlatResource extends Resource
@@ -164,13 +165,16 @@ class UnitAlatResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = auth()->user();
-        return $user->hasRole('admin') || $user->hasRole('kepala');
+        return auth()->user()->hasRole(['admin']);
     }
 
     public static function canViewAny(): bool
     {
-        $user = auth()->user();
-        return $user->hasRole('admin') || $user->hasRole('kepala');
+        return auth()->user()->hasRole(['admin']);
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()->hasRole(['admin']);
     }
 }
