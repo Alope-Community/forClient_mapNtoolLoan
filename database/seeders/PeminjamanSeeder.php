@@ -37,6 +37,12 @@ class PeminjamanSeeder extends Seeder
                 'tanggal_pengembalian' => $today->copy()->subDays(1),
                 'status' => 'returned',
             ],
+            [
+                'id_peminjam' => 2,
+                'tanggal_pinjam' => $today->copy()->subDays(7),
+                'tanggal_pengembalian' => $today->copy()->addDays(1),
+                'status' => 'approved',
+            ],
             // 4. Masih pending dan belum dimulai
             [
                 'id_peminjam' => 2,

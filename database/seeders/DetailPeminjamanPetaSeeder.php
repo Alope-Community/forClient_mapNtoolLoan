@@ -24,7 +24,7 @@ class DetailPeminjamanPetaSeeder extends Seeder
         //     DetailPeminjamanPeta::create($item);
         // }
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 6; $i++) {
             DetailPeminjamanPeta::create([
                 'id_peminjaman' => $i,
                 'id_unit_peta' => 1,

@@ -24,7 +24,7 @@ class DetailPeminjamanAlatSeeder extends Seeder
         //     DetailPeminjamanAlat::create($item);
         // }
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 6; $i++) {
             DetailPeminjamanAlat::create([
                 'id_peminjaman' => $i,
                 'id_unit_alat' => 1,
