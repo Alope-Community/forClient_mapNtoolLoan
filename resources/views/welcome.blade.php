@@ -1519,7 +1519,7 @@
     @endif
 </head>
 
-<body class="h-screen w-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1601582585792-3a1c1eac5644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80')">
+<body class="h-screen w-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
     <div class="flex items-center justify-center h-full backdrop-blur-sm bg-black/30">
         <div class="bg-white/30 backdrop-blur-lg rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
             <h1 class="text-3xl font-bold text-white mb-6 drop-shadow">Selamat Datang</h1>
