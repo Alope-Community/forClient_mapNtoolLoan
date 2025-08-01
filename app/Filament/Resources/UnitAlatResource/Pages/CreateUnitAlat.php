@@ -79,7 +79,7 @@ class CreateUnitAlat extends CreateRecord
                         ->visible(fn(Get $get) => $get('serial_mode') === 'baru')
                         ->columnSpanFull(),
 
-                    Textarea::make('deskripsi')
+                    Textarea::make('deskripsi_serial')
                         ->label('Deskripsi Serial')
                         ->required(fn(Get $get) => $get('serial_mode') === 'baru')
                         ->visible(fn(Get $get) => $get('serial_mode') === 'baru')
@@ -96,7 +96,7 @@ class CreateUnitAlat extends CreateRecord
 
                     Textarea::make('deskripsi_terpilih')
                         ->label('Deskripsi Serial (Terpilih)')
-                        ->disabled()
+                        ->readOnly()
                         ->visible(fn(Get $get) => $get('serial_mode') === 'pilih')
                         ->afterStateHydrated(function (Set $set, Get $get) {
                             $serial = SerialNumber::find($get('id_serial_number'));
@@ -111,7 +111,7 @@ class CreateUnitAlat extends CreateRecord
                         $serial = SerialNumber::create([
                             'id_alat' => $get('id_alat'),
                             'serial_number' => $get('serial_number'),
-                            'deskripsi' => $get('deskripsi'),
+                            'deskripsi' => $get('deskripsi_serial'),
                         ]);
                         $set('id_serial_number', $serial->id);
                     }
