@@ -31,6 +31,7 @@ class EmployeePanelProvider extends PanelProvider
             ->path('employee')
             ->login(LoginEmployee::class)
             ->profile(EditProfile::class)
+            ->databaseNotifications()
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label(fn() => auth()->user()->getFilamentName())
