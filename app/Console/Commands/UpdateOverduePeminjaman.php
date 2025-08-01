@@ -36,15 +36,43 @@ class UpdateOverduePeminjaman extends Command
             'detailPeminjamanPeta.unitPeta',
         ])
             ->where('status', '!=', 'returned')
-            ->where(function ($query) use ($today) {
-                $query->whereDate('tanggal_pengembalian', '<', $today)
-                    ->orWhereDate('tanggal_pengembalian', '=', $today->copy()->subDay());
-            })
+            ->whereDate('tanggal_pengembalian', '<', $today)
             ->get();
 
         $updatedCount = 0;
 
+        // Ambil data yang jatuh tempo besok
+        $reminderDate = \Carbon\Carbon::now()->addDay()->startOfDay();
+
+        $upcomingReturns = \App\Models\Peminjaman::with([
+            'user',
+            'detailPeminjamanAlat.unitAlat',
+            'detailPeminjamanPeta.unitPeta',
+        ])
+            ->where('status', '!=', 'returned')
+            ->whereDate('tanggal_pengembalian', '=', $reminderDate)
+            ->get();
+
+        foreach ($upcomingReturns as $peminjaman) {
+            $namaPeminjam = $peminjaman->user->nama;
+            $batasPeminjaman = \Carbon\Carbon::parse($peminjaman->tanggal_pengembalian)->translatedFormat('d F Y');
+            $jumlahAlat = $peminjaman->detailPeminjamanAlat->count();
+            $jumlahPeta = $peminjaman->detailPeminjamanPeta->count();
+
+            $bodyMessageReminder = new HtmlString("
+            Anda memiliki peminjaman yang akan jatuh tempo pada <strong>{$batasPeminjaman}</strong>.<br>
+            Jumlah Alat: <strong>{$jumlahAlat}</strong><br>
+            Jumlah Peta: <strong>{$jumlahPeta}</strong><br>
+            <a href='" . route('filament.employee.resources.pengembalian.view', $peminjaman) . "' class='underline text-primary-600'>Lihat Detail</a>");
+
+            Notification::make()
+                ->title('Peminjaman Akan Jatuh Tempo')
+                ->body($bodyMessageReminder)
+                ->sendToDatabase($peminjaman->user);
+        }
+
         foreach ($overdues as $peminjamanOverdue) {
+
             $peminjamanOverdue->update(['status' => 'overdue']);
 
             foreach ($peminjamanOverdue->detailPeminjamanAlat as $detail) {
