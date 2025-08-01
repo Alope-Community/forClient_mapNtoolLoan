@@ -13,15 +13,22 @@ class DetailPeminjamanAlatSeeder extends Seeder
      */
     public function run(): void
     {
-        $detailPeminjaman = [
-            [
-                'id_peminjaman' => 1,
-                'id_unit_alat' => 1, // Kompas
-            ]
-        ];
+        // $detailPeminjaman = [
+        //     [
+        //         'id_peminjaman' => 1,
+        //         'id_unit_alat' => 1, // Kompas
+        //     ]
+        // ];
 
-        foreach ($detailPeminjaman as $item) {
-            DetailPeminjamanAlat::create($item);
+        // foreach ($detailPeminjaman as $item) {
+        //     DetailPeminjamanAlat::create($item);
+        // }
+
+        for ($i = 1; $i <= 5; $i++) {
+            DetailPeminjamanAlat::create([
+                'id_peminjaman' => $i,
+                'id_unit_alat' => 1,
+            ]);
         }
     }
 }
